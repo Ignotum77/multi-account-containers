@@ -48,6 +48,9 @@ const messageHandler = {
         // m.url is the assignment to be removed/added
         response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
+      case "setWildcardHostnameForAssignment":
+        response = assignManager._setWildcardHostnameForAssignment(m.url, m.wildcardHostname);
+        break;
       case "resetCookiesForSite":
         response = assignManager._resetCookiesForSite(m.pageUrl, m.cookieStoreId);
         break;
@@ -77,6 +80,12 @@ const messageHandler = {
           cookieStoreId: m.cookieStoreId,
           windowId: m.windowId
         });
+        break;
+      case "backupIdentitiesState":
+        response = backgroundLogic.backupIdentitiesState();
+        break;
+      case "restoreIdentitiesState":
+        response = backgroundLogic.restoreIdentitiesState(m.identities);
         break;
       case "queryIdentitiesState":
         response = backgroundLogic.queryIdentitiesState(m.message.windowId);
@@ -141,6 +150,7 @@ const messageHandler = {
         if (!extensionInfo.permissions.includes("contextualIdentities")) {
           throw new Error("Missing contextualIdentities permission");
         }
+        // eslint-disable-next-line require-atomic-updates
         externalExtensionAllowed[sender.id] = true;
       }
       let response;
@@ -257,8 +267,6 @@ const messageHandler = {
       browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
       browser.browserAction.setBadgeText({text: "NEW"});
     }
-
-    this.maybePrepareSurveyAchievementOnUpdate(countOfContainerTabsOpened);
   },
 
   async onFocusChangedCallback(windowId) {
@@ -275,34 +283,7 @@ const messageHandler = {
     }).catch((e) => {
       throw e;
     });
-  },
-
-  async maybePrepareSurveyAchievementOnUpdate(countOpened) {
-    if (countOpened < 10) {
-      return;
-    }
-
-    // Show the survey only for English locales (en or en-*).
-    const uiLang = browser.i18n.getUILanguage();
-    const lang = (uiLang || "").toLowerCase();
-    if (lang !== "en" && !lang.startsWith("en-")) {
-      return;
-    }
-
-    // Check if already scheduled in the past; if so, do not show again.
-    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const achievements = achievementsStorage.achievements;
-    const existing = achievements.find(a => a.name === "surveyFinal");
-    if (existing) {
-      return;
-    }
-
-    // Ensure the achievement exists and is pending.
-    achievements.push({ name: "surveyFinal", done: false });
-    browser.storage.local.set({ achievements });
-    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-    browser.browserAction.setBadgeText({text: "NEW"});
-  },
+  }
 };
 
 // Lets do this last as theme manager did a check before connecting before

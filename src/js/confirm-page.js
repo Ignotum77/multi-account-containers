@@ -84,7 +84,6 @@ async function denySubmit(redirectUrl, currentCookieStoreId) {
   const tab = await getCurrentTab();
   const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
   const neverAsk = document.getElementById("never-ask").checked;
-
   if (neverAsk) {
     await browser.runtime.sendMessage({
       method: "neverAsk",
@@ -94,7 +93,6 @@ async function denySubmit(redirectUrl, currentCookieStoreId) {
       defaultContainer: !currentContainer
     });
   }
-
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
     tabId: tab.id,

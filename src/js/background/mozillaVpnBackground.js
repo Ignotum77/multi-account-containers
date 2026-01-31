@@ -27,7 +27,7 @@ const MozillaVPN_Background = {
       // invalid proxy connection.
       this.port.onDisconnect.addListener(() => this.increaseIsolationKey());
 
-    } catch {
+    } catch(e) {
       this._installed = false;
       this._connected = false;
     }

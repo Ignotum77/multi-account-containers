@@ -44,7 +44,7 @@
   <div class="panel onboarding onboarding-panel-6 hide" id="onboarding-panel-6">
     <img class="onboarding-img" alt="" src="/img/Sync.svg" />
     <h3 class="onboarding-title" data-i18n-message-id="onboarding-6-header"></h3>
-    <p data-i18n-message-id="onboarding-6-description-2"></p>
+    <p data-i18n-message-id="onboarding-6-description"></p>
     <div class="half-button-wrapper">
       <a href="#" id="no-sync" class="half-onboarding-button grey-button keyboard-nav" tabindex="0" data-i18n-message-id="notNow"></a>
       <a href="#" id="start-sync-button" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="startSyncing"></a>
@@ -53,8 +53,8 @@
 
   <div class="panel onboarding onboarding-panel-7 hide" id="onboarding-panel-7">
     <img class="onboarding-img" alt="" src="/img/Account.svg" />
-    <h3 class="onboarding-title" data-i18n-message-id="onboarding-7-header-2"></h3>
-    <p data-i18n-message-id="onboarding-7-description-2"></p>
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-7-header"></h3>
+    <p data-i18n-message-id="onboarding-7-description"></p>
     <div class="half-button-wrapper">
       <a href="#" id="no-sign-in" class="half-onboarding-button grey-button keyboard-nav" tabindex="0" data-i18n-message-id="notNow"></a>
       <a href="#" id="sign-in" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="signIn"></a>
@@ -104,19 +104,6 @@
       </a>
     </p>
     <a href="#" id="achievement-done-button" class="onboarding-button keyboard-nav" data-i18n-message-id="done"></a>
-  </div>
-
-  <div class="panel survey-panel hide" id="survey-panel">
-    <img id="survey-img" alt="" src="/img/survey.svg" />
-
-    <h3 class="onboarding-title">Help Improve Containers</h3>
-    <p class="survey-blurb">Please take 5 minutes to share your experiences with the add-on! This will help us effectively prioritize improvements.</p>
-    <p class="survey-blurb">Learn more about the research here.</p>
-    <br/><p class="survey-blurb">Thank you for using Multi-Account Containers!</p>
-    <p class="share-ctas survey-back">
-      <a class="cta-link onboarding-button keyboard-nav" href="https://mozilla.qualtrics.com/jfe/form/SV_2aSQMGyfp2DFLtI" id="survey-button" target="_blank">Take Survey</a>
-    </p>
-    <a href="#" id="survey-achievement-done-button">Back</a>
   </div>
 
   <div class="panel menu-panel container-panel hide" id="container-panel">
@@ -205,7 +192,6 @@
         </tr>
       </table>
     </div>
-
     <v-padding-hack-footer></v-padding-hack-footer> <!--prevents last container from getting covered up by the 'manage containers button' when list is long-->
     <div class="bottom-btn keyboard-nav controller" id="manage-containers-link" tabindex="0" data-i18n-message-id="manageContainers"></div>
   </div>
@@ -323,11 +309,16 @@
         <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
           <legend class="form-header" data-i18n-message-id="icon"></legend>
         </fieldset>
-        <fieldset class="proxies"> <!---- PROXIES -->
+        <fieldset class="proxies"> <!-- PROXIES -->
           <input type="text" class="proxies" name="container-proxy" id="edit-container-panel-proxy" placeholder="type://host:port" hidden/>
           <input type="text" class="proxies" name="moz-proxy-enabled" id="moz-proxy-enabled" maxlength="5" hidden/>
           <input type="text" class="proxies" name="country-code" id="country-code-input" maxlength="5" hidden/>
           <input type="text" class="proxies" name="city-name" id="city-name-input" maxlength="5" hidden/>
+        </fieldset>
+        <fieldset id="edit-container-panel-add-site" hidden>
+          <legend class="form-header">Assign site</legend>
+          <input type="text" name="site-name" id="edit-container-panel-site-input"/>
+          <a class="button secondary" id="edit-container-site-link">Add</a>
         </fieldset>
       </form>
       <div id="edit-container-options">

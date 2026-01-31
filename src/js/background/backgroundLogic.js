@@ -13,8 +13,8 @@ const backgroundLogic = {
   ]),
   NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
-  init() {
 
+  init() {
     browser.commands.onCommand.addListener(function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
@@ -35,52 +35,8 @@ const backgroundLogic = {
     browser.permissions.onRemoved.addListener(permissions => this.resetPermissions(permissions));
 
     // Update Translation in Manifest
-    browser.runtime.onInstalled.addListener((details) => {
-      this.updateTranslationInManifest();
-      this._undoDefault820SortTabsKeyboardShortcut(details);
-      this._removeSurveyAchievement();
-    });
+    browser.runtime.onInstalled.addListener(this.updateTranslationInManifest);
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
-  },
-
-  /**
-   * One-time migration after updating from v8.2.0:
-   * Unset the default keyboard shortcut (Ctrl+Comma) for the `sort_tabs`
-   * command if it was set in v8.2.0 of this addon. If the user remapped
-   * a different shortcut manually, retain their shortcut. Users who used
-   * the default keyboard shortcut will need to manually set a shortcut.
-   * See https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox
-   *
-   * @param {{reason: runtime.OnInstalledReason, previousVersion?: string}} details
-   */
-  async _undoDefault820SortTabsKeyboardShortcut(details) {
-    if (details.reason === "update" && details.previousVersion === "8.2.0") {
-      const commands = await browser.commands.getAll();
-      const sortTabsCommand = commands.find(command => command.name === "sort_tabs");
-      if (sortTabsCommand) {
-        const previouslySuggestedKeys = [
-          "Ctrl+Comma", // "default"
-          "MacCtrl+Comma", // "mac"
-        ];
-        if (previouslySuggestedKeys.includes(sortTabsCommand.shortcut)) {
-          browser.commands.reset("sort_tabs");
-        }
-      }
-    }
-  },
-
-  /**
-   * We left an achievement entry in storage during a user research study in
-   * version 8.3.1. This method removes that entry to prevent broken logic in
-   * the achievement views.
-   */
-  async _removeSurveyAchievement() {
-    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const achievements = achievementsStorage.achievements;
-    const filtered = achievements.filter(a => a.name !== "survey");
-    if (filtered.length !== achievements.length) {
-      await browser.storage.local.set({achievements: filtered});
-    }
   },
 
   updateTranslationInManifest() {
@@ -254,7 +210,7 @@ const backgroundLogic = {
         containerState.isIsolated = "locked";
       }
       return await identityState.storageArea.set(cookieStoreId, containerState);
-    } catch {
+    } catch (error) {
       // console.error(`No container: ${cookieStoreId}`);
     }
   },
@@ -348,6 +304,90 @@ const backgroundLogic = {
     }
     const tabIds = tabs.map((tab) => tab.id);
     return browser.tabs.remove(tabIds);
+  },
+
+  async backupIdentitiesState() {
+    const identities = await browser.contextualIdentities.query({});
+    return Promise.all(
+      identities.map(async ({ cookieStoreId, color, icon, name }) => {
+        const userContextId = this.getUserContextIdFromCookieStoreId(cookieStoreId);
+        const [
+          { isIsolated },
+          sitesByContainer
+        ] = await Promise.all([
+          identityState.storageArea.get(cookieStoreId),
+          assignManager.storageArea.getAssignedSites(userContextId)
+        ]);
+        const sites = Object.values(sitesByContainer).map(({ neverAsk, hostname }) => ({ neverAsk, hostname }));
+        return ({
+          color,
+          icon,
+          name,
+          isolated: isIsolated && true, // either `true` or `undefined`
+          sites
+        });
+      })
+    );
+  },
+
+  async restoreIdentitiesState(identities) {
+    const backup = await browser.contextualIdentities.query({});
+    const incomplete = [];
+    let allSucceed = true;
+    const identitiesPromise = identities.map(async ({ color, icon, name, isolated, sites }) => {
+      try {
+        if (
+          typeof color !== "string" || 
+          typeof icon !== "string" || 
+          typeof name !== "string" ||
+          (isolated !== true && isolated !== undefined) ||
+          !Array.isArray((sites))
+        )
+          throw new Error("Corrupted container backup");
+        const identity = await browser.contextualIdentities.create({ color, icon, name });
+        try {
+          await identityState.storageArea.get(identity.cookieStoreId); // to create identity state
+          const userContextId = this.getUserContextIdFromCookieStoreId(identity.cookieStoreId);
+          for (const { neverAsk, hostname } of sites) {
+            if (typeof neverAsk !== "boolean" || typeof hostname !== "string" || hostname === "")
+              throw new Error("Corrupted site association");
+            const pageUrl = `http://${hostname}`; // protocol doesn't really matter here
+            await assignManager.storageArea.set(pageUrl, {
+              neverAsk,
+              userContextId
+            });
+          }
+          if (isolated)
+            await identityState.storageArea.set(identity.cookieStoreId, { isIsolated: "locked" });
+        } catch (err) {
+          incomplete.push(name); // site association damaged
+        }
+        return identity;
+      } catch (err) {
+        allSucceed = false;
+        return null;
+      }
+    });
+    const created = await Promise.all(identitiesPromise);
+    if (!allSucceed) { // Importation failed, restore previous state
+      await Promise.all(
+        created.map(async (identityOrNull) => {
+          if (identityOrNull) {
+            await identityState.storageArea.remove(identityOrNull.cookieStoreId);
+            await browser.contextualIdentities.remove(identityOrNull.cookieStoreId);
+          }
+        })
+      );
+      throw new Error("Some containers couldn't be created");
+    }
+    // Importation succeed, remove old identities
+    await Promise.all(
+      backup.map(async (identity) => {
+        await identityState.storageArea.remove(identity.cookieStoreId);
+        await browser.contextualIdentities.remove(identity.cookieStoreId);
+      })
+    );
+    return { created: created.length, incomplete };
   },
 
   async queryIdentitiesState(windowId) {

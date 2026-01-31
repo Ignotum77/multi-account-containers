@@ -26,18 +26,10 @@
   src: url("/fonts/Inter-Medium.woff2") format("woff2");
 }
 
-@font-face {
-  font-family: "Inter-SemiBold";
-  font-style: normal;
-  font-weight: 700;
-  src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
-}
-
 [data-theme="light"],
 :root {
   --fontInter: "Inter", sans-serif;
   --fontInterMedium: "Inter-Medium", sans-serif;
-  --fontInterSemiBold: "Inter-SemiBold", sans-serif;
   --fontMetropolis: "Metropolis", sans-serif;
   --fontMetropolisLight: "Metropolis-Light", sans-serif;
   --iconArrowLeft: url("/img/arrow-icon-left.svg");
@@ -69,7 +61,7 @@
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --inactive-opacity: 0.3;
   --overflow-size: 1px;
-  --icon-fit: 8;
+  --icon-fit: 9;
 
   background: var(--bgColor);
   margin-block: 0;
@@ -115,11 +107,10 @@
   --toggle-on-bg-focus-color: #0060df;
   --toggle-on-border-color: #0060df;
   --toggle-on-handle-bg-color: #fff;
-  --usercontext-bg-hover-color: #f0f0fa;
-  --usercontext-bg-focus-color: #e0e0e6;
-  --usercontext-bg-active-color: #cfcfd8;
+  --usercontext-bg-active-color: #e0e0e6;
+  --usercontext-bg-focus-color: #cfcaf6;
+  --usercontext-bg-hover-color: #e0e0e6;
 }
-
 [data-theme="dark"] {
   --iconCloseX: url("/img/close-light.svg");
   --iconGear: url("/img/gear-icon-light.svg");
@@ -390,6 +381,16 @@ table {
 [data-identity-color="purple"] {
   --identity-tab-color: #af51f5;
   --identity-icon-color: #af51f5;
+}
+
+[data-identity-color="toolbar"] {
+  --identity-tab-color: #000000;
+  --identity-icon-color: #000000;
+}
+
+[data-theme="dark"] [data-identity-color="toolbar"] {
+  --identity-tab-color: #ffffff;
+  --identity-icon-color: #ffffff;
 }
 
 [data-identity-icon="fingerprint"] {
@@ -1659,20 +1660,8 @@ input[type=text] {
   background-color: var(--button-bg-hover-color-primary);
 }
 
-#survey-achievement-done-button {
-  color: var(--button-bg-color-primary);
-  transition: color 0.1s ease;
-  font-size: 14px;
-  padding-inline: 3px;
-  padding-block: 1px;
-  border-radius: 1px;
-  text-align: center;
-  margin-inline: auto;
-}
-
 .onboarding-button:focus,
-.half-onboarding-button:focus,
-#survey-achievement-done-button:focus {
+.half-onboarding-button:focus {
   box-shadow:
     0 0 0 2px var(--button-bg-color-secondary),
     0 0 0 4px var(--button-bg-focus-color-primary);
@@ -1830,6 +1819,22 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
+#edit-sites-assigned .hostname .subdomain:hover {
+  text-decoration: underline;
+}
+
+#edit-sites-assigned .hostname .subdomain.wildcardSubdomain {
+  background-color: var(--identity-icon-color);
+  border-radius: 8px;
+  margin-right: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+[data-theme="light"] #edit-sites-assigned[data-identity-color="toolbar"] .hostname .subdomain.wildcardSubdomain {
+  color: #ffffff;
+}
+
 .assigned-sites-list > div {
   display: flex;
   padding-block-end: 6px;
@@ -1938,6 +1943,19 @@ manage things like container crud */
 .edit-container-panel input[type="text"] {
   inline-size: 100%;
   margin-inline: 4px;
+}
+
+.edit-container-panel input[type="text"]#edit-container-panel-site-input {
+  inline-size: 80%;
+}
+
+#edit-container-site-link {
+  background: #ebebeb;
+  block-size: 36px;
+}
+
+#edit-container-site-link:hover {
+  background: #e3e3e3;
 }
 
 input[type="text"]:focus {
@@ -2428,53 +2446,4 @@ tr:hover > td > .reset-button {
 
 .searchbar input {
   inline-size: 100%;
-}
-
-/* Survey Popup */
-
-.survey-blurb,
-#survey-panel h3.onboarding-title {
-  text-align: center;
-  margin-inline: auto;
-}
-
-#survey-panel h3.onboarding-title {
-  max-inline-size: 100%;
-  font-family: var(--fontInterSemiBold);
-  line-height: 24px;
-  margin-block-end: 12px;
-}
-
-#survey-panel {
-  padding-block: 40px;
-  padding-inline: 0;
-}
-
-.survey-blurb {
-  margin-block-end: 16px;
-  margin-inline: 24px;
-}
-
-#survey-img {
-  block-size: 180px;
-  margin-block-end: 16px;
-}
-
-#survey-button {
-  padding-block: 4px;
-  padding-inline: 16px;
-  margin-block: 0 8px;
-  min-block-size: 32px;
-}
-
-.share-ctas.survey-back {
-  margin-inline: auto;
-}
-
-#survey-achievement-done-button:hover {
-  color: var(--button-bg-hover-color-primary);
-}
-
-#survey-achievement-done-button:active {
-  color: var(--button-bg-active-color-primary);
 }

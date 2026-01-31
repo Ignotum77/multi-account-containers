@@ -1,14 +1,13 @@
 {
   "manifest_version": 2,
-  "name": "Firefox Multi-Account Containers",
+  "name": "Multi-Account Containers (Wildcard)",
   "version": "8.3.5",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
-    "48": "img/multiaccountcontainer-16.svg",
-    "96": "img/multiaccountcontainer-16.svg"
+    "48": "img/ui/icon-mac.svg",
+    "96": "img/ui/icon-mac.svg"
   },
-  "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
   "permissions": [
     "<all_urls>",
     "activeTab",
@@ -32,11 +31,12 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "@testpilot-containers",
+      "id": "@multi-containers-wildcard",
       "strict_min_version": "91.1.0",
       "data_collection_permissions": {
         "required": ["none"]
-      }
+      },
+      "update_url": "https://raw.githubusercontent.com/Ignotum77/multi-account-containers/wildcard/src/update.json"
     }
   },
   "commands": {
@@ -46,9 +46,6 @@
         "mac": "MacCtrl+Period"
       },
       "description": "__MSG_openContainerPanel__"
-    },
-    "sort_tabs": {
-      "description": "__MSG_sortTabsByContainer__"
     },
     "open_container_0": {
       "suggested_key": {
@@ -113,25 +110,16 @@
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "img/multiaccountcontainer-16.svg",
+    "default_icon": "img/ui/icon-mac.svg",
     "default_title": "Firefox Multi-Account Containers",
     "default_popup": "popup.html",
-    "default_area": "navbar",
     "theme_icons": [
       {
-        "light": "img/multiaccountcontainer-16.svg",
-        "dark": "img/multiaccountcontainer-16.svg",
+        "light": "img/ui/icon-mac.svg",
+        "dark": "img/ui/icon-mac.svg",
         "size": 32
       }
     ]
-  },
-  "page_action": {
-    "browser_style": true,
-    "default_icon": "img/container-openin-16.svg",
-    "default_title": "__MSG_alwaysOpenSiteInContainer__",
-    "default_popup": "pageActionPopup.html",
-    "pinned": false,
-    "show_matches": ["*://*/*"]
   },
   "background": {
     "page": "js/background/index.html"
@@ -152,7 +140,7 @@
   ],
   "default_locale": "en",
   "web_accessible_resources": [
-    "/img/multiaccountcontainer-16.svg"
+    "/img/ui/icon-openin.svg"
   ],
   "options_ui": {
     "page": "options.html",

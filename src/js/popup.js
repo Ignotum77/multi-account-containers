@@ -31,7 +31,6 @@ const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
-const P_SURVEY_ACHIEVEMENT = "surveyAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
 
@@ -138,31 +137,19 @@ const Logic = {
   },
 
   async showAchievementOrContainersListPanel() {
+    // Do we need to show an achievement panel?
+    let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const achievements = achievementsStorage.achievements;
-
-    let saveAchievements = false;
-    for (const achievement of achievements.filter(a => !a.done)) {
-      if (achievement.name === "manyContainersOpened") {
-        this.showPanel(P_CONTAINERS_ACHIEVEMENT);
-        return;
+    for (const achievement of achievementsStorage.achievements) {
+      if (!achievement.done) {
+        showAchievements = true;
       }
-
-      if (achievement.name === "surveyFinal") {
-        this.showPanel(P_SURVEY_ACHIEVEMENT);
-        return;
-      }
-
-      // We have found an unknown achievement. Let's mark it as done.
-      achievement.done = true;
-      saveAchievements = true;
     }
-
-    if (saveAchievements) {
-      browser.storage.local.set({ achievements });
+    if (showAchievements) {
+      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+    } else {
+      this.showPanel(P_CONTAINERS_LIST);
     }
-
-    this.showPanel(P_CONTAINERS_LIST);
   },
 
   // In case the user wants to click multiple actions,
@@ -211,7 +198,7 @@ const Logic = {
     // Handle old style rejection with null and also Promise.reject new style
     try {
       return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
-    } catch {
+    } catch (e) {
       return defaultContainer;
     }
   },
@@ -242,7 +229,6 @@ const Logic = {
         browser.contextualIdentities.move(
           node.dataset.containerId, index);
       }
-
       return containerOrder[node.dataset.containerId] = index;
     });
     await browser.storage.local.set({
@@ -438,7 +424,7 @@ const Logic = {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch {
+      } catch (e) {
         window.close();
       }
     }
@@ -452,7 +438,7 @@ const Logic = {
       isSearchInputFocused = true;
     }
 
-    if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
+   if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
       switch(e.code) {
       case "Digit0":
       case "Digit1":
@@ -775,7 +761,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           method: "sortTabs"
         });
         window.close();
-      } catch {
+      } catch (e) {
         window.close();
       }
     });
@@ -864,7 +850,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch {
+        } catch (e) {
           window.close();
         }
       });
@@ -875,7 +861,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch {
+        } catch (e) {
           window.close();
         }
       });
@@ -925,7 +911,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-    } catch {
+    } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
 
@@ -960,12 +946,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch {
+      } catch (e) {
         window.close();
       }
     });
     // Populating the panel: name and icon
     document.getElementById("container-info-title").textContent = identity.name;
+    document.getElementById("edit-sites-assigned").setAttribute("data-identity-color", identity.color);
 
     const alwaysOpen = document.querySelector("#always-open-in-info-panel");
     Utils.addEnterHandler(alwaysOpen, async () => {
@@ -1022,7 +1009,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: Logic.currentCookieStoreId()
         });
         window.close();
-      } catch {
+      } catch (e) {
         window.close();
       }
     });
@@ -1099,7 +1086,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch {
+      } catch (e) {
         window.close();
       }
     };
@@ -1471,11 +1458,12 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         trElement.innerHTML = Utils.escaped`
         <td>
           <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text truncate-text">${site.hostname}</span>
+          <span title="${site.hostname}" class="menu-text hostname truncate-text"></span>
           <img title="${resetSiteCookiesInfo}" class="reset-button reset-assignment" src="/img/refresh-16.svg" />
           <img title="${deleteSiteInfo}" class="trash-button delete-assignment"  src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+        trElement.querySelector(".hostname").appendChild(this.assignmentHostnameElement(site));
         const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
@@ -1499,10 +1487,91 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
             Logic.notify({messageId: "cookiesCouldNotBeCleared", placeholders: [site.hostname]});
           }
         });
+        // Wildcard click-to-toggle subdomains
+        trElement.querySelectorAll(".subdomain").forEach((subdomainLink) => {
+          subdomainLink.addEventListener("click", (e) => {
+            const wildcardHostname = e.target.getAttribute("data-wildcardHostname");
+            Utils.setWildcardHostnameForAssignment(assumedUrl, wildcardHostname);
+            if (wildcardHostname) {
+              // Remove wildcard from other site that has same wildcard
+              Object.values(assignments).forEach((site) => {
+                if (site.wildcardHostname === wildcardHostname) { delete site.wildcardHostname; }
+              });
+              site.wildcardHostname = wildcardHostname;
+            } else {
+              delete site.wildcardHostname;
+            }
+            this.showAssignedContainers(assignments);
+          });
+        });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);
       });
     }
+  },
+
+  getSubdomains(site) {
+    const hostname = site.hostname;
+    const wildcardHostname = site.wildcardHostname;
+    if (wildcardHostname && wildcardHostname !== hostname) {
+      if (hostname.endsWith(wildcardHostname)) {
+        return {
+          wildcard: "★",
+          remaining: wildcardHostname
+        };
+      } else {
+        // In case something got corrupted, allow user to fix error
+        // by clicking '★' link to clear corrupted wildcard hostname
+        return {
+          wildcard: "★",
+          remaining: hostname
+        };
+      }
+    } else {
+      return {
+        wildcard: null,
+        remaining: hostname
+      };
+    }
+  },
+
+  assignmentHostnameElement(site) {
+    const result = document.createElement("span");
+    const subdomains = this.getSubdomains(site);
+
+    // Add wildcard subdomain(s)
+    if (subdomains.wildcard) {
+      result.appendChild(this.assignmentSubdomainLink(null, subdomains.wildcard));
+      result.appendChild(document.createTextNode("."));
+    }
+
+    // Add non-wildcard subdomains
+    let remainingHostname = subdomains.remaining;
+    let indexOfDot;
+    while ((indexOfDot = remainingHostname.indexOf(".")) >= 0) {
+      const subdomain = remainingHostname.substring(0, indexOfDot);
+      remainingHostname = remainingHostname.substring(indexOfDot + 1);
+      result.appendChild(this.assignmentSubdomainLink(remainingHostname, subdomain));
+      result.appendChild(document.createTextNode("."));
+    }
+
+    // Root domain
+    if (remainingHostname) { result.appendChild(document.createTextNode(remainingHostname)); }
+
+    return result;
+  },
+
+  assignmentSubdomainLink(wildcardHostnameOnClick, text) {
+    const result = document.createElement("a");
+    result.className = "subdomain";
+    if (wildcardHostnameOnClick) {
+      result.setAttribute("data-wildcardHostname", wildcardHostnameOnClick);
+      result.title = `*.${wildcardHostnameOnClick}`;
+    } else {
+      result.classList.add("wildcardSubdomain");
+    }
+    result.appendChild(document.createTextNode(text));
+    return result;
   },
 });
 
@@ -1842,6 +1911,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
       this._submitForm();
     });
+
+    // Add new site to current container
+    const siteLink = document.querySelector("#edit-container-site-link");
+    Utils.addEnterHandler(siteLink, () => {
+      this._addSite();
+    });
   },
 
   async _submitForm() {
@@ -1861,7 +1936,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       });
       await Logic.refreshIdentities();
       Logic.showPreviousPanel();
-    } catch {
+    } catch (e) {
       Logic.showPreviousPanel();
     }
   },
@@ -1884,12 +1959,119 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     return editedIdentity;
   },
 
+  async _addSite() {
+    // Get URL and container ID from form
+    const formValues = new FormData(this._editForm);
+    const url = formValues.get("site-name");
+    const userContextId = formValues.get("container-id");
+    const currentTab = await Logic.currentTab();
+    const tabId = currentTab.id;
+    const baseURL = this.normalizeUrl(url);
+    
+    if (baseURL !== null) {
+      // Assign URL to container
+      await Utils.setOrRemoveAssignment(tabId, baseURL, userContextId, false);
+
+      // Clear form
+      document.querySelector("#edit-container-panel-site-input").value = "";
+
+      // Show new assignments
+      const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+      this.showAssignedContainers(assignments);
+    }
+  },
+
+  normalizeUrl(url){
+    /*
+     *  Important: the rules that automatically open a site in a container only
+     *  look at the URL up to but excluding the / after the domainname.
+     *
+     *  Furthermore, containers are only useful for http & https URLs because
+     *  those are the only protocols that transmit cookies to maintain
+     *  sessions.
+     */
+
+    // Preface with "https://" if no protocol present
+    const startsWithProtocol = /^\w+:\/\/|^mailto:/; // all protocols are followed by :// (except mailto) 
+    if (!url.match(startsWithProtocol)) {
+      url = "https://" + url;
+    }
+
+    /*
+     * Dual-purpose match: (1) check that url start with http or https proto,
+     * and (2) exclude everything from the / after the domain (any path, any
+     * query string, and any anchor)
+     */
+    const basePart = /^(https?:\/\/)([^/?#]*)/;
+    const r = url.match(basePart);
+    if (!r) return null;
+    const urlProto = r[1];      // includes :// if any
+    const urlConnection = r[2]; // [user[:passwd]@]domain[:port]
+
+    // Extract domain from [user[:passwd]@]domain[:port]
+    const domainPart = /^(?:.*@)?([^:]+)/;
+    const d = urlConnection.match(domainPart);
+    if (!d) return null;
+    const urlDomain = d[1];
+
+    // Check that the domain is valid (RFC-1034)
+    const validDomain = /^(?:\w(?:[\w-]*\w)?)(?:\.\w(?:[\w-]*\w)?)+$/;
+    if (!urlDomain.match(validDomain)) return null;
+
+    return urlProto+urlDomain;
+  },
+
+  showAssignedContainers(assignments) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(assignments);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    if (assignments) {
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
+      /* Remove previous assignment list,
+         after removing one we rerender the list */
+      while (tableElement.firstChild) {
+        tableElement.firstChild.remove();
+      }
+
+      assignmentKeys.forEach((siteKey) => {
+        const site = assignments[siteKey];
+        const trElement = document.createElement("div");
+        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+           This is pending a better solution for favicons from web extensions */
+        const assumedUrl = `https://${site.hostname}/favicon.ico`;
+        trElement.innerHTML = Utils.escaped`
+        <div class="favicon"></div>
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
+        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+        const deleteButton = trElement.querySelector(".delete-assignment");
+        const that = this;
+        Utils.addEnterHandler(deleteButton, async () => {
+          const userContextId = Logic.currentUserContextId();
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          const currentTab = await Logic.currentTab();
+          Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          delete assignments[siteKey];
+          that.showAssignedContainers(assignments);
+        });
+        trElement.classList.add("container-info-tab-row", "clickable");
+        tableElement.appendChild(trElement);
+      });
+    }
+  },
+
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
       return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple", "toolbar"];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
@@ -1935,6 +2117,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       Logic.showPanel(P_CONTAINER_ASSIGNMENTS, this.getEditInProgressIdentity(), false, false);
     });
 
+    // Only show ability to add site if it's an existing container
+    document.querySelector("#edit-container-panel-add-site").hidden = !userContextId;
+    // Make site input empty
+    document.querySelector("#edit-container-panel-site-input").value = "";
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");
@@ -2352,7 +2538,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      } catch {
+      } catch (e) {
         Logic.showPreviousPanel();
       }
     });
@@ -2380,30 +2566,6 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
     Utils.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
       await Logic.setAchievementDone("manyContainersOpened");
       Logic.showPanel(P_CONTAINERS_LIST);
-    });
-  },
-
-  // This method is called when the panel is shown.
-  prepare() {
-    return Promise.resolve(null);
-  },
-});
-
-// P_SURVEY_ACHIEVEMENT: A simple survey view.
-// ----------------------------------------------------------------------------
-
-Logic.registerPanel(P_SURVEY_ACHIEVEMENT, {
-  panelSelector: ".survey-panel",
-
-  // This method is called when the object is registered.
-  initialize() {
-    Utils.addEnterHandler(document.querySelector("#survey-achievement-done-button"), async () => {
-      await Logic.setAchievementDone("surveyFinal");
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
-    Utils.addEnterHandler(document.querySelector("#survey-button"), async () => {
-      await Logic.setAchievementDone("surveyFinal");
-      window.close();
     });
   },
 

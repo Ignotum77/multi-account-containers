@@ -97,6 +97,7 @@ const Utils = {
   /**
    * @returns {Promise<Tab|false>}
    */
+
   async currentTab() {
     const activeTabs = await browser.tabs.query({ active: true, windowId: browser.windows.WINDOW_ID_CURRENT });
     if (activeTabs.length > 0) {
@@ -138,6 +139,14 @@ const Utils = {
       url,
       userContextId,
       value
+    });
+  },
+
+  setWildcardHostnameForAssignment(url, wildcardHostname) {
+    return browser.runtime.sendMessage({
+      method: "setWildcardHostnameForAssignment",
+      url,
+      wildcardHostname
     });
   },
 

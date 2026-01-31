@@ -24,7 +24,7 @@ async function addMessage(message) {
   divElement.innerText = message.text;
 
   const imageElement = document.createElement("img");
-  const imagePath = browser.runtime.getURL("/img/multiaccountcontainer-16.svg");
+  const imagePath = browser.runtime.getURL("/img/ui/icon-mac.svg");
   const response = await fetch(imagePath);
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);
