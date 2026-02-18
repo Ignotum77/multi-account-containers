@@ -278,6 +278,7 @@ window.assignManager = {
     this.storageArea.getOrWildcardMatch(pageUrl).then((siteMatchResult) => {
       if (siteMatchResult) {
         siteMatchResult.siteSettings.neverAsk = true;
+        siteMatchResult.siteSettings.userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(m.cookieStoreId);
         this.storageArea.set(siteMatchResult.siteStoreKey, siteMatchResult.siteSettings);
       }
     }).catch((e) => {
