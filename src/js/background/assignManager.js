@@ -270,7 +270,7 @@ window.assignManager = {
   _neverAsk(m) {
     const pageUrl = m.pageUrl;
     if (m.defaultContainer === true) {
-      this.storageArea.delete(pageUrl);
+      this.storageArea.remove(pageUrl);
       return;
     }
     // If we have existing data and for some reason it hasn't been
