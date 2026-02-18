@@ -473,7 +473,7 @@
   },
   "openBookmarkInContainerTab": {
     "message": "Open Bookmark in Container Tab"
-  }
+  },
   "clearSiteCookiesTooltipInfo": {
     "message": "Clear cookies for this site",
     "description": "Label for hovering of the refresh button in a containers site manager"
