@@ -1,6 +1,6 @@
 {
   "addons": {
-    "@testpilot-containers-wildcard": {
+    "@multi-containers-wildcard": {
       "updates": [
         {
           "version": "8.3.7",
