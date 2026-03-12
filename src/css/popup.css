@@ -28,6 +28,8 @@
 
 [data-theme="light"],
 :root {
+  color-scheme: light;
+
   --fontInter: "Inter", sans-serif;
   --fontInterMedium: "Inter-Medium", sans-serif;
   --fontMetropolis: "Metropolis", sans-serif;
@@ -111,7 +113,10 @@
   --usercontext-bg-focus-color: #cfcaf6;
   --usercontext-bg-hover-color: #e0e0e6;
 }
+
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --iconCloseX: url("/img/close-light.svg");
   --iconGear: url("/img/gear-icon-light.svg");
   --iconArrowRight: url("/img/arrow-icon-right-light.svg");
@@ -237,7 +242,9 @@ body {
 [data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
-[data-theme="dark"] #container-info-table .menu-icon {
+[data-theme="dark"] #container-info-table .menu-icon,
+[data-theme="dark"] #always-open .menu-icon,
+[data-theme="dark"] #always-open-in .menu-icon {
   filter: invert(0);
 }
 
