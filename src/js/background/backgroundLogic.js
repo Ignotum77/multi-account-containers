@@ -67,11 +67,15 @@ const backgroundLogic = {
   },
 
   updateTranslationInManifest() {
-    for (let index = 0; index < 10; index++) {
+    for (let index = 0; index < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; index++) {
       const ajustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
       browser.commands.update({
-        name: `open_container_${index}`,
+        name: `${MAC_CONSTANTS.OPEN_CONTAINER_PREFIX}${index}`,
         description: browser.i18n.getMessage("containerShortcut", `${ajustedIndex}`)
+      });
+      browser.commands.update({
+        name: `${MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX}${index}`,
+        description: browser.i18n.getMessage("reopenInContainerShortcut", `${adjustedIndex}`)
       });
     }
   },
