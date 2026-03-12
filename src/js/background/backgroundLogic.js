@@ -26,16 +26,18 @@ const backgroundLogic = {
       for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
         const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
-        const cookieStoreId = identityState.keyboardShortcut[key];
-        if (cookieStoreId === "none") {
-          continue;
-        }
         if (command === key) {
-          browser.tabs.create({cookieStoreId});
+          const cookieStoreId = identityState.keyboardShortcut[key];
+          if (cookieStoreId && cookieStoreId !== "none") {
+            browser.tabs.create({cookieStoreId});
+          }
           return;
         }
         if (command === reopenKey) {
-          backgroundLogic.reopenInContainer(cookieStoreId);
+          const cookieStoreId = identityState.keyboardShortcut[reopenKey];
+          if (cookieStoreId && cookieStoreId !== "none") {
+            backgroundLogic.reopenInContainer(cookieStoreId);
+          }
           return;
         }
       }
@@ -57,7 +59,7 @@ const backgroundLogic = {
 
       browser.tabs.create({
         url: tab.url,
-        cookieStoreId: cookieStoreId,
+        cookieStoreId,
         index: tab.index + 1,
         active: tab.active
       });
