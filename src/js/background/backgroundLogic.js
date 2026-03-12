@@ -17,7 +17,7 @@ const backgroundLogic = {
   unhideQueue: [],
 
   init() {
-    browser.commands.onCommand.addListener(function (command) {
+    browser.commands.onCommand.addListener(async function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
         return;
