@@ -229,6 +229,15 @@
   "enableSyncDescription": {
     "message": "Ce paramètre vous permet de synchroniser vos conteneurs et affectations de sites entre vos appareils."
   },
+  "syncExclude": {
+    "message": "Exclusion de conteneurs"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Insérer une expression régulière"
+  },
+  "syncExcludeDescription": {
+    "message": "Exclure des conteneurs de la synchronisation lorsque leur nom correspond à l’expression régulière insensible à la casse spécifiée."
+  },
   "replaceTab": {
     "message": "Remplacer l’onglet plutôt qu’en créer un nouveau"
   },
@@ -389,6 +398,36 @@
   "filterInputPlaceholder": {
     "message": "Rechercher un nom de conteneur"
   },
+  "imageAltContainerInfo": {
+    "message": "Informations sur le conteneur",
+    "description": "Alt text for right-arrow button to view container info"
+  },
+  "defaultContainerLabel": {
+    "message": "Conteneur par défaut",
+    "description": "The title of the default container"
+  },
+  "openContainerPanel": {
+    "message": "Ouvrir le panneau des conteneurs",
+    "description": "Label for option in the keyboard shortcut manager (associating a shortcut to open the container panel)"
+  },
+  "containerShortcut": {
+    "message": "Raccourci de conteneur $keyId$",
+    "description": "Label for option in the keyboard shortcut manager. $keyId$ is a number from 1 to 10.",
+    "placeholders": {
+      "keyId": {
+        "content": "$1"
+      }
+    }
+  },
+  "reopenInContainerShortcut": {
+    "message": "Rouvrir dans le conteneur $keyId$",
+    "description": "The keyboard shortcut description for reopening current tab in container number $keyId$",
+    "placeholders": {
+      "keyId": {
+        "content": "$1"
+      }
+    }
+  },
   "openBookmarkInContainerTab": {
     "message": "Ouvrir le marque-page dans un onglet conteneur"
   },
@@ -401,11 +440,12 @@
     "description": "Label for hovering of the trash button in a containers site manager"
   },
   "clearContainerStorage": {
-    "message": "Effacer l\u2019espace de stockage et les cookies",
+    "message": "Effacer l’espace de stockage et les cookies",
     "description": "Label for the clearing a containers storage and cache option"
   },
   "cookiesClearedSuccess": {
     "message": "Les cookies de $siteName$ ont \u00e9t\u00e9 effac\u00e9s",
+    "message": "Les cookies de $siteName$ ont été effacés",
     "description": "Label to confirm that cookies were cleared in the site manager",
     "placeholders": {
       "siteName": {
@@ -414,7 +454,7 @@
     }
   },
   "cookiesCouldNotBeCleared": {
-    "message": "Les cookies n\u2019ont pas pu \u00eatre effac\u00e9s pour $siteName$",
+    "message": "Les cookies n’ont pas pu être effacés pour $siteName$",
     "description": "Error message that shows if cookies could not be cleared in the site manager",
     "placeholders": {
       "siteName": {
@@ -423,7 +463,7 @@
     }
   },
   "storageWasClearedConfirmation": {
-    "message": "L\u2019espace de stockage et les cookies de $containerName$ ont \u00e9t\u00e9 effac\u00e9s.",
+    "message": "L’espace de stockage et les cookies de $containerName$ ont été effacés.",
     "description": "The confirmation label that a containers storage was cleared successfully.",
     "placeholders": {
       "containerName": {
