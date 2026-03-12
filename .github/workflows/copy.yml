@@ -1,0 +1,45 @@
+name: Copy Mozilla-l10n
+
+on:
+  schedule:
+    - cron: "00 00 1 * *"
+  workflow_dispatch:
+
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-only-cancel-in-progress-jobs-or-runs-for-the-current-workflow
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Copy Mozilla-l10n
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo check
+        run: |
+          if [[ "$GITHUB_REPOSITORY_OWNER" != "Ignotum77" ]]; then
+            echo "This GitHub Action is meant to copy Mozilla-l10n to Multi-Account Containers (Wildcard)."
+            echo "You shouldn't need to run this GitHub Action in your fork."
+            echo "If you do, please customize the cron expression above, and the URLs below."
+            exit 1
+          fi
+          exit 0
+      - name: Clone Mozilla-l10n
+        uses: actions/checkout@v3
+      - name: Copy Mozilla-l10n to Multi-Account Containers (Wildcard)
+        run: |
+          TMPFILE=$(mktemp -d)
+          git clone --depth=1 --single-branch --branch=main https://github.com/mozilla-l10n/multi-account-containers-l10n.git $TMPFILE
+          cp $TMPFILE/de/*.json src/_locales/de/
+          cp $TMPFILE/en/*.json src/_locales/en/
+          cp $TMPFILE/fr/*.json src/_locales/fr/
+          cp $TMPFILE/nl/*.json src/_locales/nl/
+      - name: Commit changes (if any)
+        run: |
+          if [[ -n $(git diff) ]]; then
+            git config user.name "Ignotum77"
+            git config user.email "<>"
+            git add -u src/_locales/de/ src/_locales/en/ src/_locales/fr/ src/_locales/nl/
+            git commit -m "Updated from @mozilla-l10n"
+            git push origin wildcard
+          fi
