@@ -11,7 +11,7 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
-  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
+  NUMBER_OF_KEYBOARD_SHORTCUTS: MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS,
   unhideQueue: [],
 
   init() {
@@ -22,11 +22,19 @@ const backgroundLogic = {
       }
 
       for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
+        const key = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
+        const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
         const cookieStoreId = identityState.keyboardShortcut[key];
+        if (cookieStoreId === "none") {
+          continue;
+        }
         if (command === key) {
-          if (cookieStoreId === "none") return;
           browser.tabs.create({cookieStoreId});
+          return;
+        }
+        if (command === reopenKey) {
+          backgroundLogic.reopenInContainer(cookieStoreId);
+          return;
         }
       }
     });
@@ -37,6 +45,23 @@ const backgroundLogic = {
     // Update Translation in Manifest
     browser.runtime.onInstalled.addListener(this.updateTranslationInManifest);
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
+  },
+
+  async reopenInContainer(cookieStoreId) {
+    const currentTab = await browser.tabs.query({ active: true, currentWindow: true })
+
+    if (currentTab.length > 0) {
+      const tab = currentTab[0];
+
+      browser.tabs.create({
+        url: tab.url,
+        cookieStoreId: cookieStoreId,
+        index: tab.index + 1,
+        active: tab.active
+      });
+
+      browser.tabs.remove(tab.id);
+    }
   },
 
   updateTranslationInManifest() {
