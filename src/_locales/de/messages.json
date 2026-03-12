@@ -229,6 +229,15 @@
   "enableSyncDescription": {
     "message": "Mit dieser Einstellung können Sie Ihre Umgebungen und Website-Zuweisungen geräteübergreifend synchronisieren."
   },
+  "syncExclude": {
+    "message": "Umgebung ausschließen"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Einen regulären Ausdruck einfügen"
+  },
+  "syncExcludeDescription": {
+    "message": "Schließen Sie Umgebungen von der Synchronisierung aus, wenn ihr Name mit dem angegebenen regulären Ausdruck ohne Berücksichtigung der Groß-/Kleinschreibung übereinstimmt."
+  },
   "replaceTab": {
     "message": "Tab ersetzen, anstatt einen neuen zu erstellen"
   },
@@ -382,72 +391,48 @@
     "message": "Dunkel",
     "description": "Value for the theme option select tag"
   },
-  "backupFailure": {
-    "message": "Etwas ist schief gelaufen, Backup fehlgeschlagen: $errorMessage$",
-    "description": "(Options menu) When exporting containers as a file failed",
+  "filterInputLabel": {
+    "message": "Umgebungsliste nach Namen filtern:",
+    "description": "Label for the filter input in the main panel. Only visible for screen reader."
+  },
+  "filterInputPlaceholder": {
+    "message": "Nach Umgebungsname suchen"
+  },
+  "imageAltContainerInfo": {
+    "message": "Container-Info",
+    "description": "Alt text for right-arrow button to view container info"
+  },
+  "defaultContainerLabel": {
+    "message": "Standard-Container",
+    "description": "The title of the default container"
+  },
+  "openContainerPanel": {
+    "message": "Umgebungs-Bereich öffnen",
+    "description": "Label for option in the keyboard shortcut manager (associating a shortcut to open the container panel)"
+  },
+  "containerShortcut": {
+    "message": "Umgebungs-Tastaturkürzel $keyId$",
+    "description": "Label for option in the keyboard shortcut manager. $keyId$ is a number from 1 to 10.",
     "placeholders": {
-      "errorMessage": {
+      "keyId": {
         "content": "$1"
       }
     }
   },
-  "containersRestored": {
-    "message": "$restoredCount$ wiederhergestellt.",
-    "description": "(Options menu) When importing containers from a file succeeded",
+  "reopenInContainerShortcut": {
+    "message": "In Tab-Umgebung $keyId$ erneut öffnen",
+    "description": "The keyboard shortcut description for reopening current tab in container number $keyId$",
     "placeholders": {
-      "restoredCount": {
-        "content": "$1",
-        "example": "12"
+      "keyId": {
+        "content": "$1"
       }
     }
-  },
-  "containersPartiallyRestored": {
-    "message": "$restoredCount$ wiederhergestellt, aber einige verloren ihre Site-Zuordnung: $incompleteList$.",
-    "description": "(Options menu) When importing containers from a file succeeded, but some containers associations couldn’t be restored",
-    "placeholders": {
-      "restoredCount": {
-        "content": "$1",
-        "example": "12"
-      },
-      "incompleteList": {
-        "content": "$1",
-        "example": "MyFacebookContainer, MyTwitterContainer"
-      }
-    }
-  },
-  "containersRestorationFailed": {
-    "message": "Die Datei ist beschädigt oder es ist keine Container-Sicherungsdatei.",
-    "description": "(Options menu) When importing containers from a file failed (most likely due to a malformed file)"
-  },
-  "backup": {
-    "message": "Backup",
-    "description": "(Options menu) Backup to/from a file header"
-  },
-  "restoreLegend": {
-    "message": "Wiederherstellen",
-    "description": "(Options menu) Restore containers from a file group header"
-  },
-  "warningConfigOverride": {
-    "message": "WARNUNG! Dieser Vorgang löscht die aktuelle Konfiguration mit der importierten. Alle mit vorhandenen Containern verknüpften Cookies werden verworfen.",
-    "description": "(Options menu) Warns the user that old containers will be deleted along with their associated cookies"
-  },
-  "saveLegend": {
-    "message": "Speichern",
-    "description": "(Options menu) Save containers to a file group header"
-  },
-  "saveButton": {
-    "message": "Speichern",
-    "description": "(Options menu) Validate saving containers to a file"
-  },
-  "noteWontBackupCookies": {
-    "message": "Sichert nur Containernamen, Symbole, Farben und Site-Zuordnungen, aber KEINE Container-Cookies.",
-    "description": "(Options menu) Inform the user that cookies won’t be saved and they cannot be restored using the file backup"
   },
   "openBookmarkInContainerTab": {
-    "message": "Lesezeichen in Tab in Umgebung \u00f6ffnen"
+    "message": "Lesezeichen in Tab in Umgebung öffnen"
   },
   "clearSiteCookiesTooltipInfo": {
-    "message": "Cookies f\u00fcr diese Website l\u00f6schen",
+    "message": "Cookies für diese Website löschen",
     "description": "Label for hovering of the refresh button in a containers site manager"
   },
   "deleteSiteTooltipInfo": {
@@ -455,11 +440,11 @@
     "description": "Label for hovering of the trash button in a containers site manager"
   },
   "clearContainerStorage": {
-    "message": "Speicher und Cookies lüschen",
+    "message": "Speicher und Cookies löschen",
     "description": "Label for the clearing a containers storage and cache option"
   },
   "cookiesClearedSuccess": {
-    "message": "Cookies für $siteName$ wurden erfolgreich gelüscht",
+    "message": "Cookies für $siteName$ wurden erfolgreich gelöscht",
     "description": "Label to confirm that cookies were cleared in the site manager",
     "placeholders": {
       "siteName": {
@@ -468,7 +453,7 @@
     }
   },
   "cookiesCouldNotBeCleared": {
-    "message": "Cookies von $siteName$ konnten nicht gelüscht werden",
+    "message": "Cookies von $siteName$ konnten nicht gelöscht werden",
     "description": "Error message that shows if cookies could not be cleared in the site manager",
     "placeholders": {
       "siteName": {
@@ -477,7 +462,7 @@
     }
   },
   "storageWasClearedConfirmation": {
-    "message": "Speicher und Cookies von $containerName$ wurden gelüscht.",
+    "message": "Speicher und Cookies von $containerName$ wurden gelöscht.",
     "description": "The confirmation label that a containers storage was cleared successfully.",
     "placeholders": {
       "containerName": {
