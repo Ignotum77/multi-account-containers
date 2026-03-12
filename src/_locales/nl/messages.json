@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "Met Multi-Account Containers kunt u alle onderdelen van uw onlineleven in verschillende tabbladen houden. Aangepaste labels en kleurgecodeerde tabbladen helpen verschillende activiteiten – zoals online winkelen, reisplanning of het lezen van zakelijke e-mail – gescheiden te houden. Deze addon komt ook met wildcard(*) ondersteuning.",
+    "message": "Met Multi-Account Containers kunt u alle onderdelen van uw onlineleven in verschillende tabbladen houden. Aangepaste labels en kleurgecodeerde tabbladen helpen verschillende activiteiten – zoals online winkelen, reisplanning of het lezen van zakelijke e-mail – gescheiden te houden.",
     "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
   },
   "openInNewTabTitle": {
@@ -72,13 +72,13 @@
   "onboarding-6-header": {
     "message": "Het synchroniseren van containers is nu beschikbaar!"
   },
-  "onboarding-6-description": {
+  "onboarding-6-description-2": {
     "message": "Schakel synchronisatie in om container- en websitetoewijzingen te delen met elke computer die is verbonden met uw account."
   },
-  "onboarding-7-header": {
+  "onboarding-7-header-2": {
     "message": "Een account is vereist om te synchroniseren."
   },
-  "onboarding-7-description": {
+  "onboarding-7-description-2": {
     "message": "Klik op Aanmelden om te bevestigen dat uw account actief is."
   },
   "onboarding-8-description": {
@@ -124,10 +124,10 @@
     "message": "Weet u zeker dat u deze container wilt verwijderen?"
   },
   "clearContainerStoragePanelTitle": {
-    "message": "Verwijder Container Opslag"
+    "message": "Containeropslag wissen"
   },
   "clearContainerStorageConfirmation": {
-    "message": "Weet u zeker dat u cookies en opslag voor deze container wilt verwijderen?"
+    "message": "Weet u zeker dat u cookies en opslag voor deze container wilt wissen?"
   },
   "cancel": {
     "message": "Annuleren"
@@ -228,6 +228,15 @@
   },
   "enableSyncDescription": {
     "message": "Met deze instelling kunt u uw containers en websitetoewijzingen met andere apparaten synchroniseren."
+  },
+  "syncExclude": {
+    "message": "Uitsluiting van containers"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Een reguliere expressie invoegen"
+  },
+  "syncExcludeDescription": {
+    "message": "Containers uitsluiten van synchronisatie wanneer hun naam overeenkomt met de opgegeven hoofdletterongevoelige reguliere expressie."
   },
   "replaceTab": {
     "message": "Tabblad vervangen in plaats van een nieuw maken"
@@ -390,86 +399,34 @@
     "message": "Containernaam zoeken"
   },
   "imageAltContainerInfo": {
-    "message": "Container info",
+    "message": "Containerinfo",
     "description": "Alt text for right-arrow button to view container info"
   },
   "defaultContainerLabel": {
-    "message": "Standaard Container",
+    "message": "Standaardcontainer",
     "description": "The title of the default container"
   },
   "openContainerPanel": {
-    "message": "Open container panel",
+    "message": "Containerpaneel openen",
     "description": "Label for option in the keyboard shortcut manager (associating a shortcut to open the container panel)"
   },
   "containerShortcut": {
-    "message": "Container sneltoets $keyId$",
+    "message": "Containersnelkoppeling $keyId$",
     "description": "Label for option in the keyboard shortcut manager. $keyId$ is a number from 1 to 10.",
     "placeholders": {
       "keyId": {
-          "content": "$1"
-      }
-    }
-  },
-  "backupFailure": {
-    "message": "Er ging iets mis, back-up mislukte: $errorMessage$",
-    "description": "(Options menu) When exporting containers as a file failed",
-    "placeholders": {
-      "errorMessage": {
         "content": "$1"
       }
     }
   },
-  "containersRestored": {
-    "message": "$restoredCount$ hersteld.",
-    "description": "(Options menu) When importing containers from a file succeeded",
+  "reopenInContainerShortcut": {
+    "message": "Opnieuw openen in container $keyId$",
+    "description": "The keyboard shortcut description for reopening current tab in container number $keyId$",
     "placeholders": {
-      "restoredCount": {
-        "content": "$1",
-        "example": "12"
+      "keyId": {
+        "content": "$1"
       }
     }
-  },
-  "containersPartiallyRestored": {
-    "message": "$restoredCount$ hersteld, maar sommige verloren hun site-associatie: $incompleteList$.",
-    "description": "(Options menu) When importing containers from a file succeeded, but some containers associations couldn’t be restored",
-    "placeholders": {
-      "restoredCount": {
-        "content": "$1",
-        "example": "12"
-      },
-      "incompleteList": {
-        "content": "$1",
-        "example": "MyFacebookContainer, MyTwitterContainer"
-      }
-    }
-  },
-  "containersRestorationFailed": {
-    "message": "Het bestand is beschadigd of is geen containerback-upbestand.",
-    "description": "(Options menu) When importing containers from a file failed (most likely due to a malformed file)"
-  },
-  "backup": {
-    "message": "Backup",
-    "description": "(Options menu) Backup to/from a file header"
-  },
-  "restoreLegend": {
-    "message": "Herstellen",
-    "description": "(Options menu) Restore containers from a file group header"
-  },
-  "warningConfigOverride": {
-    "message": "WAARSCHUWING! Met deze bewerking wordt de huidige configuratie met de geïmporteerde gewist. Alle cookies die aan bestaande containers zijn gekoppeld, worden verwijderd.",
-    "description": "(Options menu) Warns the user that old containers will be deleted along with their associated cookies"
-  },
-  "saveLegend": {
-    "message": "Opslaan",
-    "description": "(Options menu) Save containers to a file group header"
-  },
-  "saveButton": {
-    "message": "Opslaan",
-    "description": "(Options menu) Validate saving containers to a file"
-  },
-  "noteWontBackupCookies": {
-    "message": "Maakt alleen een back-up van namen, pictogrammen, kleuren en site-associaties van containers, maar NIET van containercookies.",
-    "description": "(Options menu) Inform the user that cookies won’t be saved and they cannot be restored using the file backup"
   },
   "openBookmarkInContainerTab": {
     "message": "Bladwijzer openen in containertabblad"
