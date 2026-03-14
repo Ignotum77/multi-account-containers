@@ -444,7 +444,6 @@
     "description": "Label for the clearing a containers storage and cache option"
   },
   "cookiesClearedSuccess": {
-    "message": "Les cookies de $siteName$ ont \u00e9t\u00e9 effac\u00e9s",
     "message": "Les cookies de $siteName$ ont été effacés",
     "description": "Label to confirm that cookies were cleared in the site manager",
     "placeholders": {
