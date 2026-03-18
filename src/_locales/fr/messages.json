@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "Multi-Account Containers vous aide à garder toutes les facettes de votre vie numérique dans différents onglets. Les noms personnalisés et les onglets à code couleur permettent de séparer les différentes activités, telles que les achats en ligne, la planification de voyages ou la consultation des e-mails professionnels. Cet addon est livré avec la prise en charge des caractères génériques(*).",
+    "message": "Multi-Account Containers vous aide à garder toutes les facettes de votre vie numérique dans différents onglets. Les noms personnalisés et les onglets à code couleur permettent de séparer les différentes activités, telles que les achats en ligne, la planification de voyages ou la consultation des e-mails professionnels.",
     "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
   },
   "openInNewTabTitle": {
@@ -72,13 +72,13 @@
   "onboarding-6-header": {
     "message": "Synchroniser les conteneurs est désormais possible !"
   },
-  "onboarding-6-description": {
+  "onboarding-6-description-2": {
     "message": "Activez la synchronisation pour partager les affectations de sites et de conteneurs avec n’importe quel ordinateur connecté à votre compte."
   },
-  "onboarding-7-header": {
-    "message": "Un compte est requis pour la synchronisation."
+  "onboarding-7-header-2": {
+    "message": "Un compte est nécessaire pour activer la synchronisation."
   },
-  "onboarding-7-description": {
+  "onboarding-7-description-2": {
     "message": "Cliquez sur « Se connecter » pour confirmer que vous disposez d’un compte actif."
   },
   "onboarding-8-description": {
@@ -124,10 +124,10 @@
     "message": "Confirmez-vous la suppression de ce conteneur ?"
   },
   "clearContainerStoragePanelTitle": {
-    "message": "Clear Container Storage"
+    "message": "Effacer le stockage du conteneur"
   },
   "clearContainerStorageConfirmation": {
-    "message": "Are you sure you want to clear cookies and storage for this Container?"
+    "message": "Voulez-vous vraiment effacer les cookies et l’espace de stockage pour ce conteneur ?"
   },
   "cancel": {
     "message": "Annuler"
@@ -178,7 +178,7 @@
     "message": "Plus tard"
   },
   "startSyncing": {
-    "message": "Commencez la synchronisation"
+    "message": "Démarrer la synchronisation"
   },
   "info": {
     "message": "Informations",
@@ -218,7 +218,7 @@
     "message": "Activer les menus de marque-pages"
   },
   "sync": {
-    "message": "Synchronisation : "
+    "message": "Synchronisation :"
   },
   "enableSync": {
     "message": "Activer la synchronisation"
@@ -392,7 +392,7 @@
     "description": "Value for the theme option select tag"
   },
   "filterInputLabel": {
-    "message": "Filtrer la liste des conteneurs par nom :",
+    "message": "Filtrer la liste des conteneurs par nom :",
     "description": "Label for the filter input in the main panel. Only visible for screen reader."
   },
   "filterInputPlaceholder": {
