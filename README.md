@@ -28,8 +28,3 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 [enduser]: https://support.mozilla.org/en-US/kb/containers
 [forum]: https://discourse.mozilla.org/c/containers/223
 [matrix]: https://matrix.to/#/#containers:mozilla.org
-
-
------------------------------------
-### Fork
-This is a fork from the original. Sadly is it also a follow up from [Nomes77/multi-account-containers](https://github.com/Nomes77/multi-account-containers) from which I lost my credentials.
