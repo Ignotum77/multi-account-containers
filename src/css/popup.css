@@ -242,9 +242,7 @@ body {
 [data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
-[data-theme="dark"] #container-info-table .menu-icon,
-[data-theme="dark"] #always-open .menu-icon,
-[data-theme="dark"] #always-open-in .menu-icon {
+[data-theme="dark"] #container-info-table .menu-icon {
   filter: invert(0);
 }
 
