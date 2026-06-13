@@ -343,6 +343,16 @@ table {
   /* Only used for the edit panel */
   --identity-icon-color: #616161;
 }
+
+[data-identity-color="toolbar"] {
+  --identity-tab-color: #000000;
+  --identity-icon-color: #000000;
+}
+
+[data-theme="dark"] [data-identity-color="toolbar"] {
+  --identity-tab-color: #ffffff;
+  --identity-icon-color: #ffffff;
+}
 /* stylelint-enable no-descending-specificity */
 
 #current-tab [data-identity-icon="default-tab"] {
