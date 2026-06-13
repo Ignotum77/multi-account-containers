@@ -345,13 +345,11 @@ table {
 }
 
 [data-identity-color="toolbar"] {
-  --identity-tab-color: #000000;
-  --identity-icon-color: #000000;
+  --identity-color: #000000;
 }
 
 [data-theme="dark"] [data-identity-color="toolbar"] {
-  --identity-tab-color: #ffffff;
-  --identity-icon-color: #ffffff;
+  --identity-color: #ffffff;
 }
 /* stylelint-enable no-descending-specificity */
 
