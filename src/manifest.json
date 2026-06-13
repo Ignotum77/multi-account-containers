@@ -5,8 +5,8 @@
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
-    "48": "img/ui/icon-mac.svg",
-    "96": "img/ui/icon-mac.svg"
+    "48": "img/multiaccountcontainer-16.svg",
+    "96": "img/multiaccountcontainer-16.svg"
   },
   "permissions": [
     "<all_urls>",
@@ -140,13 +140,13 @@
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "img/ui/icon-mac.svg",
+    "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Multi-Account Containers (Wildcard)",
     "default_popup": "popup.html",
     "theme_icons": [
       {
-        "light": "img/ui/icon-mac.svg",
-        "dark": "img/ui/icon-mac.svg",
+        "light": "img/multiaccountcontainer-16.svg",
+        "dark": "img/multiaccountcontainer-16.svg",
         "size": 32
       }
     ]
@@ -170,7 +170,7 @@
   ],
   "default_locale": "en",
   "web_accessible_resources": [
-    "/img/ui/icon-openin.svg"
+    "img/container-openin-16.svg"
   ],
   "options_ui": {
     "page": "options.html",
