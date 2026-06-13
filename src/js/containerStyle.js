@@ -16,6 +16,7 @@ const ContainerStyle = {
     red: "#ff613d",
     pink: "#ff4bda",
     purple: "#af51f5",
+    toolbar: "var(--toolbar-color)"
   },
   FALLBACK_ICONS: [
     "fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food",
@@ -111,6 +112,18 @@ const ContainerStyle = {
     for (const name of this._iconUrls.keys()) {
       css += `[data-identity-icon="${name}"]{--identity-icon:url("${this.iconImage(name)}");}\n`;
     }
+    css += `
+      @media (prefers-color-scheme: light) {
+        :root {
+          --toolbar-color: #000000;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --toolbar-color: #ffffff;
+        }
+      }
+    `;
     return css;
   },
 
