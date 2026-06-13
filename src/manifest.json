@@ -170,7 +170,7 @@
   ],
   "default_locale": "en",
   "web_accessible_resources": [
-    "img/container-openin-16.svg"
+    "/img/container-openin-16.svg"
   ],
   "options_ui": {
     "page": "options.html",
