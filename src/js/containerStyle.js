@@ -112,14 +112,6 @@ const ContainerStyle = {
     for (const name of this._iconUrls.keys()) {
       css += `[data-identity-icon="${name}"]{--identity-icon:url("${this.iconImage(name)}");}\n`;
     }
-    css += `
-      :root {
-        --toolbar-color: #000000;
-      }
-      [data-theme="dark"] {
-        --toolbar-color: #ffffff !important;
-      }
-    `;
     return css;
   },
 
