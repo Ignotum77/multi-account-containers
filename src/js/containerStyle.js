@@ -113,15 +113,11 @@ const ContainerStyle = {
       css += `[data-identity-icon="${name}"]{--identity-icon:url("${this.iconImage(name)}");}\n`;
     }
     css += `
-      @media (prefers-color-scheme: light) {
-        :root {
-          --toolbar-color: #000000;
-        }
+      :root {
+        --toolbar-color: #000000;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --toolbar-color: #ffffff;
-        }
+      [data-theme="dark"] {
+        --toolbar-color: #ffffff !important;
       }
     `;
     return css;
