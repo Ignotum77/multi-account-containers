@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Multi-Account Containers (Wildcard)",
-  "version": "8.3.9.2",
+  "version": "8.4.0",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
