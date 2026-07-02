@@ -37,7 +37,7 @@ jobs:
       - name: Commit changes (if any)
         run: |
           if [[ -n $(git diff) ]]; then
-            git config user.name "Ignotum77"
+            git config user.name "GitHub Actions"
             git config user.email "<>"
             git add -u src/_locales/de/ src/_locales/en/ src/_locales/fr/ src/_locales/nl/
             git commit -m "Updated from @mozilla-l10n"
