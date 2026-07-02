@@ -20,22 +20,6 @@ window.assignManager = {
       }
     },
 
-    getWildcardStoreKey(wildcardHostname) {
-      return `wildcardMap@@_${wildcardHostname}`;
-    },
-
-    getWildcardStoreKeys(siteStoreKey) {
-      // E.g. "siteContainerMap@@_www.mozilla.org" =>
-      // ["wildcardMap@@_www.mozilla.org", "wildcardMap@@_mozilla.org", "wildcardMap@@_org"]
-      let previous;
-      return siteStoreKey.replace(/^siteContainerMap@@_/, "")
-        .split(".")
-        .reverse()
-        .map((subdomain) => previous = previous ? `${subdomain}.${previous}` : subdomain)
-        .map((hostname) => this.getWildcardStoreKey(hostname))
-        .reverse();
-    },
-
     setExempted(pageUrlorUrlKey, tabId) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
@@ -62,40 +46,16 @@ window.assignManager = {
       return this.getByUrlKey(siteStoreKey);
     },
 
-    async getOrWildcardMatch(pageUrlorUrlKey) {
-      // 1st store request: siteStoreKey + wildcardStoreKeys
-      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
-      const wildcardStoreKeys = this.getWildcardStoreKeys(siteStoreKey);
-      const combinedStoreKeys = [siteStoreKey].concat(wildcardStoreKeys);
-      let storageResponse = await this.area.get(combinedStoreKeys);
-      if (!storageResponse) { return null; }
-
-      // Try exact match
-      const siteSettings = storageResponse[siteStoreKey];
-      if (siteSettings) {
-        return {
-          siteStoreKey,
-          siteSettings
-        };
+    async match(pageUrl) {
+      const domainMatchKeys = domainManager.getDomainMatchKeys(pageUrl);
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      const storageResponse = await this.area.get([...domainMatchKeys, siteStoreKey]);
+      const domainStoreKey = domainMatchKeys.find(key => key in storageResponse);
+      const site = storageResponse[domainStoreKey ?? siteStoreKey];
+      if (domainStoreKey) {
+        site.isDomain = true;
       }
-
-      // 2nd store request (maybe): siteStoreKeys that were mapped from wildcardStoreKeys
-      const siteStoreKeys = wildcardStoreKeys.map((k) => storageResponse[k]).filter((k) => !!k);
-      if (siteStoreKeys.length > 0) {
-        storageResponse = await this.area.get(siteStoreKeys);
-        if (!storageResponse) { return null; }
-
-        // Try wildcard matches
-        for (const siteStoreKey of siteStoreKeys) {
-          const siteSettings = storageResponse[siteStoreKey];
-          if (siteSettings) {
-            return {
-              siteStoreKey,
-              siteSettings
-            };
-          }
-        }
-      }
+      return [domainStoreKey ?? siteStoreKey, site];
     },
 
     async getSyncEnabled() {
@@ -129,19 +89,11 @@ window.assignManager = {
           this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
-      if (data.wildcardHostname) {
-        await this.removeDuplicateWildcardHostname(data.wildcardHostname, siteStoreKey);
-      }
-      await this.removeWildcardLookup(siteStoreKey);
-      // eslint-disable-next-line require-atomic-updates
       data.identityMacAddonUUID =
         await identityState.lookupMACaddonUUID(data.userContextId);
       await this.area.set({
         [siteStoreKey]: data
       });
-      if (data.wildcardHostname) {
-        await this.setWildcardLookup(siteStoreKey, data.wildcardHostname);
-      }
       const syncEnabled = await this.getSyncEnabled();
       if (backup && syncEnabled) {
         await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
@@ -149,65 +101,20 @@ window.assignManager = {
       return;
     },
 
-    async setWildcardLookup(siteStoreKey, wildcardHostname) {
-      const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
-      return this.area.set({
-        [wildcardStoreKey]: siteStoreKey
-      });
-    },
-
     async remove(pageUrlorUrlKey, shouldSync = true) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrlorUrlKey);
-      // When we remove an assignment we should clear the wildcard lookup
-      await this.removeWildcardLookup(siteStoreKey);
       await this.area.remove([siteStoreKey]);
       const syncEnabled = await this.getSyncEnabled();
       if (shouldSync && syncEnabled) await sync.storageArea.backup({siteStoreKey});
       return;
     },
 
-    async removeWildcardLookup(siteStoreKey) {
-      const siteSettings = await this.getByUrlKey(siteStoreKey);
-      const wildcardHostname = siteSettings && siteSettings.wildcardHostname;
-      if (wildcardHostname) {
-        const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
-        await this.area.remove([wildcardStoreKey]);
-      }
-    },
-
-    // Must not set the same wildcardHostname property on multiple sites.
-    // E.g. 'google.com' on both 'www.google.com' and 'mail.google.com'.
-    //
-    // Necessary because the stored wildcardLookup map is 1-to-1, i.e. either
-    // 'google.com' => 'www.google.com', or
-    // 'google.com' => 'mail.google.com', but not both!
-    async removeDuplicateWildcardHostname(wildcardHostname, expectedSiteStoreKey) {
-      const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
-      const siteStoreKey = await this.getByUrlKey(wildcardStoreKey);
-      if (siteStoreKey && siteStoreKey !== expectedSiteStoreKey) {
-        const siteSettings = await this.getByUrlKey(siteStoreKey);
-        if (siteSettings && siteSettings.wildcardHostname === wildcardHostname) {
-          delete siteSettings.wildcardHostname;
-          await this.set(siteStoreKey, siteSettings); // Will cause wildcard mapping to be cleared
-        }
-      }
-    },
-
     async deleteContainer(userContextId) {
       const sitesByContainer = await this.getAssignedSites(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
       identityState.storageArea.remove(backgroundLogic.cookieStoreId(userContextId));
-      // Delete wildcard lookups
-      const wildcardStoreKeys = Object.values(sitesByContainer)
-        .map((site) => {
-          if (site && site.wildcardHostname) {
-            return this.getWildcardStoreKey(site.wildcardHostname);
-          }
-        })
-        .filter((wildcardStoreKey) => { return !!wildcardStoreKey; });
-      this.area.remove(wildcardStoreKeys);
     },
 
     async getAssignedSites(userContextId = null) {
@@ -223,9 +130,15 @@ window.assignManager = {
             continue;
           }
           const site = siteConfigs[urlKey];
-          // In hindsight we should have stored this
-          // TODO file a follow up to clean the storage onLoad
-          site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          const domainName = domainManager.getDomainNameFromStoreKey(urlKey);
+          if (domainName) {
+            site.hostname = domainName;
+            site.isDomain = true;
+          } else {
+            // In hindsight we should have stored this
+            // TODO file a follow up to clean the storage onLoad
+            site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          }
           sites[urlKey] = site;
         }
       }
@@ -269,27 +182,30 @@ window.assignManager = {
 
   _neverAsk(m) {
     const pageUrl = m.pageUrl;
-    if (m.defaultContainer === true) {
-      this.storageArea.remove(pageUrl);
-      return;
-    }
-    // If we have existing data and for some reason it hasn't been
-    // deleted etc lets update it
-    this.storageArea.getOrWildcardMatch(pageUrl).then((siteMatchResult) => {
-      if (siteMatchResult) {
-        siteMatchResult.siteSettings.neverAsk = true;
-        siteMatchResult.siteSettings.userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(m.cookieStoreId);
-        this.storageArea.set(siteMatchResult.siteStoreKey, siteMatchResult.siteSettings);
+    if (m.neverAsk === true) {
+      if (m.defaultContainer === true) {
+        this.storageArea.remove(pageUrl);
+        return;
       }
-    }).catch((e) => {
-      throw e;
-    });
+
+      // If we have existing data and for some reason it hasn't been
+      // deleted etc lets update it
+      this.storageArea.match(pageUrl).then(([siteStoreKey, siteSettings]) => {
+        if (siteSettings) {
+          siteSettings.neverAsk = true;
+          siteSettings.userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(m.cookieStoreId);
+          this.storageArea.set(siteStoreKey, siteSettings);
+        }
+      }).catch((e) => {
+        throw e;
+      });
+    }
   },
 
   // We return here so the confirm page can load the tab when exempted
   async _exemptTab(m) {
-    const pageUrl = m.pageUrl;
-    await this.storageArea.setExempted(pageUrl, m.tabId);
+    const [siteStoreKey] = await this.storageArea.match(m.pageUrl);
+    await this.storageArea.setExempted(siteStoreKey, m.tabId);
     return true;
   },
 
@@ -326,11 +242,10 @@ window.assignManager = {
       return {};
     }
     this.removeContextMenu();
-    const [tab, siteMatchResult] = await Promise.all([
+    const [tab, [siteStoreKey, siteSettings]] = await Promise.all([
       browser.tabs.get(options.tabId),
-      this.storageArea.getOrWildcardMatch(options.url)
+      this.storageArea.match(options.url)
     ]);
-    const siteSettings = siteMatchResult && siteMatchResult.siteSettings;
     let container;
     try {
       container = await browser.contextualIdentities
@@ -341,7 +256,7 @@ window.assignManager = {
 
     // The container we have in the assignment map isn't present any
     // more so lets remove it then continue the existing load
-    if (siteSettings && !container) {
+    if (siteSettings && !siteSettings.isDomain && !container) {
       this.deleteContainer(siteSettings.userContextId);
       return {};
     }
@@ -370,7 +285,7 @@ window.assignManager = {
     if (!siteIsolatedReloadInDefault) {
       if (!siteSettings
           || userContextId === siteSettings.userContextId
-          || this.storageArea.isExempted(options.url, tab.id)) {
+          || this.storageArea.isExempted(siteStoreKey, tab.id)) {
         return {};
       }
     }
@@ -577,7 +492,7 @@ window.assignManager = {
     browser.contextMenus.update(
       changeInfo.contextualIdentity.cookieStoreId, {
         title: changeInfo.contextualIdentity.name,
-        iicons: { "16": ContainerStyle.iconMenuPath(changeInfo.contextualIdentity.icon) }
+        icons: { "16": ContainerStyle.iconMenuPath(changeInfo.contextualIdentity.icon) }
       });
   },
 
@@ -688,6 +603,16 @@ window.assignManager = {
   },
 
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
+    const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);
+    await this.setOrRemoveAssignmentOrDomain(tabId, assignmentStoreKey, userContextId, remove, false);
+  },
+
+  async _setOrRemoveDomain(domainName, userContextId, remove) {
+    const domainStoreKey = domainManager.getDomainStoreKeyFromName(domainName);
+    await this.setOrRemoveAssignmentOrDomain(false, domainStoreKey, userContextId, remove, true);
+  },
+
+  async setOrRemoveAssignmentOrDomain(tabId, storeKey, userContextId, remove, isDomain) {
     let actionName;
     // https://github.com/mozilla/testpilot-containers/issues/626
     // Context menu has stored context IDs as strings, so we need to coerce
@@ -696,11 +621,17 @@ window.assignManager = {
 
     if (!remove) {
       const tabs = await browser.tabs.query({});
-      const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);
       const exemptedTabIds = tabs.filter((tab) => {
-        const tabStoreKey = this.storageArea.getSiteStoreKey(tab.url);
+        let isSameHostname;
+        if (isDomain) {
+          const tabDomainMatchKeys = domainManager.getDomainMatchKeys(tab.url);
+          isSameHostname = !!tabDomainMatchKeys.find(key => key === storeKey);
+        } else {
+          const tabStoreKey = this.storageArea.getSiteStoreKey(tab.url);
+          isSameHostname = tabStoreKey === storeKey;
+        }
         /* Auto exempt all tabs that exist for this hostname that are not in the same container */
-        if (tabStoreKey === assignmentStoreKey &&
+        if (isSameHostname &&
             this.getUserContextIdFromCookieStore(tab) !== userContextId) {
           return true;
         }
@@ -709,14 +640,14 @@ window.assignManager = {
         return tab.id;
       });
 
-      await this.storageArea.set(pageUrl, {
+      await this.storageArea.set(storeKey, {
         userContextId,
         neverAsk: false
       }, exemptedTabIds);
       actionName = "assigned site to always open in this container";
     } else {
       // Remove assignment
-      await this.storageArea.remove(pageUrl);
+      await this.storageArea.remove(storeKey);
 
       actionName = "removed from assigned sites list";
 
@@ -737,14 +668,6 @@ window.assignManager = {
     }
   },
 
-  async _setWildcardHostnameForAssignment(pageUrl, wildcardHostname) {
-    const siteSettings = await this.storageArea.get(pageUrl);
-    if (siteSettings) {
-      siteSettings.wildcardHostname = wildcardHostname;
-      await this.storageArea.set(pageUrl, siteSettings);
-    }
-  },
-
   async _maybeRemoveSiteIsolation(userContextId) {
     const assignments = await this.storageArea.getAssignedSites(userContextId);
     const hasAssignments = assignments && Object.keys(assignments).length > 0;
@@ -762,14 +685,15 @@ window.assignManager = {
     // Ensure we have a cookieStore to assign to
     if (cookieStore
         && this.isTabPermittedAssign(tab)) {
-      const siteMatchResult = await this.storageArea.getOrWildcardMatch(tab.url);
-      return siteMatchResult && siteMatchResult.siteSettings;
+      const [, siteSettings] = await this.storageArea.match(tab.url);
+      return siteSettings;
     }
     return false;
   },
 
-  _getByContainer(userContextId) {
-    return this.storageArea.getAssignedSites(userContextId);
+  async _getByContainer(userContextId) {
+    const sites = await this.storageArea.getAssignedSites(userContextId);
+    return domainManager.getDomainsAndAssignments(sites);
   },
 
   removeContextMenu() {
@@ -807,6 +731,7 @@ window.assignManager = {
       checked,
       type: "checkbox",
       contexts: ["all"],
+      enabled: !siteSettings?.isDomain
     });
 
     browser.contextMenus.create({
