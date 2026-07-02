@@ -63,7 +63,7 @@
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --inactive-opacity: 0.3;
   --overflow-size: 1px;
-  --icon-fit: 9;
+  --icon-fit: 8;
 
   background: var(--bgColor);
   margin-block: 0;
@@ -345,14 +345,6 @@ table {
 [data-identity-color="grey"] {
   /* Only used for the edit panel */
   --identity-icon-color: #616161;
-}
-
-[data-identity-color="toolbar"] {
-  --identity-color: #000000;
-}
-
-[data-theme="dark"] [data-identity-color="toolbar"] {
-  --identity-color: #ffffff;
 }
 /* stylelint-enable no-descending-specificity */
 
