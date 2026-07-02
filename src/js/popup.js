@@ -139,19 +139,26 @@ const Logic = {
   },
 
   async showAchievementOrContainersListPanel() {
-    // Do we need to show an achievement panel?
-    let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    for (const achievement of achievementsStorage.achievements) {
-      if (!achievement.done) {
-        showAchievements = true;
+    const achievements = achievementsStorage.achievements;
+
+    let saveAchievements = false;
+    for (const achievement of achievements.filter(a => !a.done)) {
+      if (achievement.name === "manyContainersOpened") {
+        this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+        return;
       }
+
+      // We have found an unknown achievement. Let's mark it as done.
+      achievement.done = true;
+      saveAchievements = true;
     }
-    if (showAchievements) {
-      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
-    } else {
-      this.showPanel(P_CONTAINERS_LIST);
+
+    if (saveAchievements) {
+      browser.storage.local.set({ achievements });
     }
+
+    this.showPanel(P_CONTAINERS_LIST);
   },
 
   // In case the user wants to click multiple actions,
@@ -200,7 +207,7 @@ const Logic = {
     // Handle old style rejection with null and also Promise.reject new style
     try {
       return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
-    } catch (e) {
+    } catch {
       return defaultContainer;
     }
   },
@@ -231,6 +238,7 @@ const Logic = {
         browser.contextualIdentities.move(
           node.dataset.containerId, index);
       }
+
       return containerOrder[node.dataset.containerId] = index;
     });
     await browser.storage.local.set({
@@ -426,7 +434,7 @@ const Logic = {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     }
@@ -440,7 +448,7 @@ const Logic = {
       isSearchInputFocused = true;
     }
 
-   if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
+    if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
       switch(e.code) {
       case "Digit0":
       case "Digit1":
@@ -763,7 +771,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           method: "sortTabs"
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -852,7 +860,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -863,7 +871,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -913,7 +921,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-    } catch (e) {
+    } catch {
       throw new Error("Could not check for incompatible add-ons.");
     }
 
@@ -948,13 +956,12 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
     // Populating the panel: name and icon
     document.getElementById("container-info-title").textContent = identity.name;
-    document.getElementById("edit-sites-assigned").setAttribute("data-identity-color", identity.color);
 
     const alwaysOpen = document.querySelector("#always-open-in-info-panel");
     Utils.addEnterHandler(alwaysOpen, async () => {
@@ -1011,7 +1018,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: Logic.currentCookieStoreId()
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -1088,7 +1095,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     };
@@ -1426,13 +1433,13 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     document.getElementById("edit-assignments-title").textContent = identity.name;
 
     const userContextId = Logic.currentUserContextId();
-    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
+    const { domains, assignments } = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(domains, assignments);
 
     return Promise.resolve(null);
   },
 
-  showAssignedContainers(assignments) {
+  showAssignedContainers(domains, assignments) {
     const closeContEl = document.querySelector("#close-container-assignment-panel");
     Utils.addEnterHandler(closeContEl, () => {
       const identity = Logic.currentIdentity();
@@ -1440,15 +1447,63 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     });
 
     const assignmentPanel = document.getElementById("edit-sites-assigned");
-    const assignmentKeys = Object.keys(assignments);
-    assignmentPanel.hidden = !(assignmentKeys.length > 0);
-    if (assignments) {
-      const tableElement = document.querySelector("#edit-sites-assigned");
-      /* Remove previous assignment list,
-         after removing one we rerender the list */
-      while (tableElement.firstChild) {
-        tableElement.firstChild.remove();
+    const domainsHeaderElement = document.querySelector("#edit-domains-assigned-header");
+    const assignmentsHeaderElement = document.querySelector("#edit-sites-assigned-header");
+    const domainsTableElement = document.querySelector("#edit-domains-assigned");
+    const assignmentsTableElement = document.querySelector("#edit-sites-assigned");
+    const domainKeys = Object.keys(domains).sort();
+    const assignmentKeys = Object.keys(assignments).sort();
+    assignmentPanel.hidden = !assignmentKeys.length && !domainKeys.length;
+    if (domainKeys.length) {
+      domainsHeaderElement.classList.remove("hide");
+    } else {
+      domainsHeaderElement.classList.add("hide");
+    }
+    if (assignmentKeys.length) {
+      assignmentsHeaderElement.classList.remove("hide");
+    } else {
+      assignmentsHeaderElement.classList.add("hide");
+    }
+    domainsTableElement.replaceChildren();
+    assignmentsTableElement.replaceChildren();
+    domainKeys.forEach((domainKey) => {
+      const domain = domains[domainKey];
+      const domainName = domain.hostname;
+      const trElement = document.createElement("tr");
+      const assumedUrl = `https://${domainName}/favicon.ico`;
+      trElement.innerHTML = Utils.escaped`
+      <td>
+        <div class="favicon"></div>
+        <span title="${domainName}" class="menu-text truncate-text">${domainName}</span>
+        <label class="switch">
+          <input id="domain-enabled" class="switch-input" name="domain-enabled" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </td>`;
+      trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+      const checkboxElement = trElement.querySelector("#domain-enabled");
+      if (domain.disabled) {
+        checkboxElement.removeAttribute("checked");
+      } else {
+        checkboxElement.setAttribute("checked", "checked");
       }
+      checkboxElement.addEventListener("click", (event) => {
+        event.target.setAttribute("disabled", "disabled");
+        setTimeout(async () => {
+          const userContextId = Logic.currentUserContextId();
+          const remove = !domain.disabled;
+          try {
+            await Utils.setOrRemoveDomain(domainName, userContextId, remove);
+          } finally {
+            const { domains, assignments } = await Logic.getAssignmentObjectByContainer(userContextId);
+            this.showAssignedContainers(domains, assignments);
+          }
+        });
+      });
+      trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      domainsTableElement.appendChild(trElement);
+    });
+    if (assignments) {
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
         const trElement = document.createElement("tr");
@@ -1460,12 +1515,11 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         trElement.innerHTML = Utils.escaped`
         <td>
           <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text hostname truncate-text"></span>
+          <span title="${site.hostname}" class="menu-text truncate-text">${site.hostname}</span>
           <img title="${resetSiteCookiesInfo}" class="reset-button reset-assignment" src="/img/refresh-16.svg" />
           <img title="${deleteSiteInfo}" class="trash-button delete-assignment"  src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
-        trElement.querySelector(".hostname").appendChild(this.assignmentHostnameElement(site));
         const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
@@ -1473,7 +1527,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           // const currentTab = await Utils.currentTab();
           Utils.setOrRemoveAssignment(false, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          this.showAssignedContainers(assignments);
+          this.showAssignedContainers(domains, assignments);
         });
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
@@ -1489,91 +1543,10 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
             Logic.notify({messageId: "cookiesCouldNotBeCleared", placeholders: [site.hostname]});
           }
         });
-        // Wildcard click-to-toggle subdomains
-        trElement.querySelectorAll(".subdomain").forEach((subdomainLink) => {
-          subdomainLink.addEventListener("click", (e) => {
-            const wildcardHostname = e.target.getAttribute("data-wildcardHostname");
-            Utils.setWildcardHostnameForAssignment(assumedUrl, wildcardHostname);
-            if (wildcardHostname) {
-              // Remove wildcard from other site that has same wildcard
-              Object.values(assignments).forEach((site) => {
-                if (site.wildcardHostname === wildcardHostname) { delete site.wildcardHostname; }
-              });
-              site.wildcardHostname = wildcardHostname;
-            } else {
-              delete site.wildcardHostname;
-            }
-            this.showAssignedContainers(assignments);
-          });
-        });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
-        tableElement.appendChild(trElement);
+        assignmentsTableElement.appendChild(trElement);
       });
     }
-  },
-
-  getSubdomains(site) {
-    const hostname = site.hostname;
-    const wildcardHostname = site.wildcardHostname;
-    if (wildcardHostname && wildcardHostname !== hostname) {
-      if (hostname.endsWith(wildcardHostname)) {
-        return {
-          wildcard: "★",
-          remaining: wildcardHostname
-        };
-      } else {
-        // In case something got corrupted, allow user to fix error
-        // by clicking '★' link to clear corrupted wildcard hostname
-        return {
-          wildcard: "★",
-          remaining: hostname
-        };
-      }
-    } else {
-      return {
-        wildcard: null,
-        remaining: hostname
-      };
-    }
-  },
-
-  assignmentHostnameElement(site) {
-    const result = document.createElement("span");
-    const subdomains = this.getSubdomains(site);
-
-    // Add wildcard subdomain(s)
-    if (subdomains.wildcard) {
-      result.appendChild(this.assignmentSubdomainLink(null, subdomains.wildcard));
-      result.appendChild(document.createTextNode("."));
-    }
-
-    // Add non-wildcard subdomains
-    let remainingHostname = subdomains.remaining;
-    let indexOfDot;
-    while ((indexOfDot = remainingHostname.indexOf(".")) >= 0) {
-      const subdomain = remainingHostname.substring(0, indexOfDot);
-      remainingHostname = remainingHostname.substring(indexOfDot + 1);
-      result.appendChild(this.assignmentSubdomainLink(remainingHostname, subdomain));
-      result.appendChild(document.createTextNode("."));
-    }
-
-    // Root domain
-    if (remainingHostname) { result.appendChild(document.createTextNode(remainingHostname)); }
-
-    return result;
-  },
-
-  assignmentSubdomainLink(wildcardHostnameOnClick, text) {
-    const result = document.createElement("a");
-    result.className = "subdomain";
-    if (wildcardHostnameOnClick) {
-      result.setAttribute("data-wildcardHostname", wildcardHostnameOnClick);
-      result.title = `*.${wildcardHostnameOnClick}`;
-    } else {
-      result.classList.add("wildcardSubdomain");
-    }
-    result.appendChild(document.createTextNode(text));
-    return result;
   },
 });
 
@@ -1932,7 +1905,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       });
       await Logic.refreshIdentities();
       Logic.showPreviousPanel();
-    } catch (e) {
+    } catch {
       Logic.showPreviousPanel();
     }
   },
@@ -1957,6 +1930,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   async initializeRadioButtons() {
     await ContainerStyle.load();
+
     const colorRadioTemplate = (containerColor) => {
       return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
@@ -2430,7 +2404,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      } catch (e) {
+      } catch {
         Logic.showPreviousPanel();
       }
     });
