@@ -16,7 +16,6 @@ const ContainerStyle = {
     red: "#ff613d",
     pink: "#ff4bda",
     purple: "#af51f5",
-    toolbar: "var(--identity-color)"
   },
   FALLBACK_ICONS: [
     "fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food",

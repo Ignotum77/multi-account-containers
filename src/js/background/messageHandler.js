@@ -48,8 +48,8 @@ const messageHandler = {
         // m.url is the assignment to be removed/added
         response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
-      case "setWildcardHostnameForAssignment":
-        response = assignManager._setWildcardHostnameForAssignment(m.url, m.wildcardHostname);
+      case "setOrRemoveDomain":
+        response = assignManager._setOrRemoveDomain(m.domain, m.userContextId, m.value);
         break;
       case "resetCookiesForSite":
         response = assignManager._resetCookiesForSite(m.pageUrl, m.cookieStoreId);
@@ -144,7 +144,6 @@ const messageHandler = {
         if (!extensionInfo.permissions.includes("contextualIdentities")) {
           throw new Error("Missing contextualIdentities permission");
         }
-        // eslint-disable-next-line require-atomic-updates
         externalExtensionAllowed[sender.id] = true;
       }
       let response;
@@ -277,7 +276,7 @@ const messageHandler = {
     }).catch((e) => {
       throw e;
     });
-  }
+  },
 };
 
 // Lets do this last as theme manager did a check before connecting before

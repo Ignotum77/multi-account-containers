@@ -63,7 +63,7 @@
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --inactive-opacity: 0.3;
   --overflow-size: 1px;
-  --icon-fit: 9;
+  --icon-fit: 8;
 
   background: var(--bgColor);
   margin-block: 0;
@@ -109,9 +109,9 @@
   --toggle-on-bg-focus-color: #0060df;
   --toggle-on-border-color: #0060df;
   --toggle-on-handle-bg-color: #fff;
-  --usercontext-bg-active-color: #e0e0e6;
-  --usercontext-bg-focus-color: #cfcaf6;
-  --usercontext-bg-hover-color: #e0e0e6;
+  --usercontext-bg-hover-color: #f0f0fa;
+  --usercontext-bg-focus-color: #e0e0e6;
+  --usercontext-bg-active-color: #cfcfd8;
 }
 
 [data-theme="dark"] {
@@ -242,6 +242,7 @@ body {
 [data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
+[data-theme="dark"] #edit-domains-assigned .menu-icon,
 [data-theme="dark"] #container-info-table .menu-icon,
 [data-theme="dark"] #always-open .menu-icon,
 [data-theme="dark"] #always-open-in .menu-icon {
@@ -344,14 +345,6 @@ table {
 [data-identity-color="grey"] {
   /* Only used for the edit panel */
   --identity-icon-color: #616161;
-}
-
-[data-identity-color="toolbar"] {
-  --identity-color: #000000;
-}
-
-[data-theme="dark"] [data-identity-color="toolbar"] {
-  --identity-color: #ffffff;
 }
 /* stylelint-enable no-descending-specificity */
 
@@ -1729,22 +1722,6 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
-#edit-sites-assigned .hostname .subdomain:hover {
-  text-decoration: underline;
-}
-
-#edit-sites-assigned .hostname .subdomain.wildcardSubdomain {
-  background-color: var(--identity-icon-color);
-  border-radius: 8px;
-  margin-right: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-[data-theme="light"] #edit-sites-assigned[data-identity-color="toolbar"] .hostname .subdomain.wildcardSubdomain {
-  color: #ffffff;
-}
-
 .assigned-sites-list > div {
   display: flex;
   padding-block-end: 6px;
@@ -2013,6 +1990,7 @@ h3.title {
 
 /* Maintain 1:1 square ratio for favicons of websites added to a specific container */
 #edit-sites-assigned .menu-icon,
+#edit-domains-assigned .menu-icon,
 #container-info-table .menu-icon {
   inline-size: 16px;
 }

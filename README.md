@@ -1,3 +1,6 @@
+# [FORKED](https://github.com/mozilla/multi-account-containers/)
+[![Last commit](https://img.shields.io/github/last-commit/mozilla/multi-account-containers?label=Last%20commit&color=informational)](https://github.com/mozilla/multi-account-containers/commits/)
+
 # Multi-Account Containers Wildcard
 
 The Firefox Multi-Account Containers extension lets you carve out a separate box for each of your online lives – no more opening a different browser just to check your work email!
