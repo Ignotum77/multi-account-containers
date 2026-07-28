@@ -1,5 +1,10 @@
 window.domainManager = {
+  isEnabled() {
+    return "publicSuffix" in browser;
+  },
+
   getDomainNameFromHostname(hostname) {
+    if (!this.isEnabled()) { return null; }
     try {
       const domainName = browser.publicSuffix.getDomain(
         hostname,
@@ -32,19 +37,18 @@ window.domainManager = {
   },
 
   getDomainMatchKeysFromName(domainName) {
-    // "mysite.s3.us-west-1.amazonaws.com" ===>
+    // E.g. "mysite.s3.us-west-1.amazonaws.com" ===>
     // [
     //   "siteContainerMap@@_*.mysite.s3.us-west-1.amazonaws.com",
     //   "siteContainerMap@@_*.s3.us-west-1.amazonaws.com",
     //   "siteContainerMap@@_*.us-west-1.amazonaws.com",
     //   "siteContainerMap@@_*.amazonaws.com",
-    //   "siteContainerMap@@_*.com",
     // ]
-    let previous;
-    return domainName
-      .split(".")
+    const labels = domainName.split(".");
+    let suffix = labels.pop();
+    return labels
       .reverse()
-      .map(domainName => previous = previous ? `${domainName}.${previous}` : domainName)
+      .map(label      => suffix = `${label}.${suffix}`)
       .map(domainName => this.getDomainStoreKeyFromName(domainName))
       .reverse();
   },
@@ -58,6 +62,10 @@ window.domainManager = {
   },
 
   async getDomainsAndAssignments(containerSites) {
+    if (!this.isEnabled()) {
+      return { domains: {}, assignments: containerSites };
+    }
+
     const enabledDomains = new Set(Object.entries(containerSites)
       .filter(([, site]) => site.isDomain)
       .map(([siteStoreKey]) => siteStoreKey)
