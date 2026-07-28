@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "8.4.0",
-          "browser_specific_settings": { "gecko": { "strict_min_version": "115.0.0" } },
+          "browser_specific_settings": { "gecko": { "strict_min_version": "115.0" } },
           "update_link": "https://github.com/Ignotum77/multi-account-containers/releases/download/8.4.0/multi_account_containers_wildcard.xpi"
         }
       ]
